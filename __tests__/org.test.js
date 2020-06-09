@@ -88,4 +88,24 @@ describe('voting routes', () => {
         });
       });
   });
+
+  it('patches an organization', () => {
+    return Organization.create({
+      title: 'Organization',
+      description: 'Organized'
+    })
+      .then(organization => {
+        return request(app)
+          .patch(`/api/v1/organizations/${organization._id}`)
+          .send({ title: 'Organization Supreme', description: 'Organized + Sour Cream' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Organization Supreme',
+          description: 'Organized + Sour Cream',
+          __v: 0
+        });
+      });
+  });
 });
