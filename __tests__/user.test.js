@@ -20,4 +20,5 @@ describe('voting routes', () => {
     await mongoose.connection.close();
     return mongod.stop();
   });
+
 });
