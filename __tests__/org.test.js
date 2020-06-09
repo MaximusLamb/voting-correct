@@ -108,4 +108,20 @@ describe('voting routes', () => {
         });
       });
   });
+
+  it('delete an organization', () => {
+    return Organization.create({
+      title: 'Organization As Heck',
+      description: 'Absolutely Organized'
+    })
+      .then(organization => request(app).delete(`/api/v1/organizations/${organization._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Organization As Heck',
+          description: 'Absolutely Organized',
+          __v: 0
+        });
+      });
+  });
 });
