@@ -72,4 +72,20 @@ describe('voting routes', () => {
         }]);
       });
   });
+
+  it('gets an organization by id', () => {
+    Organization.create({
+      title: 'Orgatron 5',
+      description: 'Organized'
+    })
+      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Orgatron 5',
+          description: 'Organized',
+          __v: 0
+        });
+      });
+  });
 });
