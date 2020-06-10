@@ -34,7 +34,7 @@ describe('poll routes', () => {
     return mongod.stop();
   });
 
-  it.only('create an poll using POST', () => {
+  it('create an poll using POST', () => {
     return request(app)
       .post('/api/v1/Polls')
       .send({
@@ -55,86 +55,77 @@ describe('poll routes', () => {
       });
   });
 
-//   it('lists all of the organizations', async() => {
-//     await Organization.create({
-//       title: 'Party Time',
-//       description: 'Partiers',
-//       image: 'placekitten.com/kitty'
-//     });
-//     await Organization.create({
-//       title: 'Big Time',
-//       description: 'Bigly',
-//       image: 'placekitten.com/bigkitty'
-//     })
+  it.only('lists all polls of the organizations', async() => {
 
-//       .then(() => request(app).get('/api/v1/organizations'))
-//       .then(res => {
-//         expect(res.body).toEqual([{
-//           _id: expect.anything(),
-//           title: 'Party Time',
-//           description: 'Partiers',
-//           image: 'placekitten.com/kitty',
-//           __v: 0
-//         },
-//         {
-//           _id: expect.anything(),
-//           title: 'Big Time',
-//           description: 'Bigly',
-//           image: 'placekitten.com/bigkitty',
-//           __v: 0
-//         }]);
-//       });
-//   });
+    await Poll.create({
+      organization: organization._id,
+      title: 'Coolest Dogs',
+      options: ['old yeller', 'balto', 'scooby doo']
+    })
+      .then(() => request(app).get('/api/v1/polls'))
+      .then(res => {
+        expect(res.body).toEqual([{
+          organization: organization.id,
+          title: 'Coolest Dogs',
+          options: ['old yeller', 'balto', 'scooby doo'],
+          _id: expect.anything(),
+          __v: 0
+        }
+        ]);
+      });
+  });
 
-//   it('gets an organization by id', () => {
-//     Organization.create({
-//       title: 'Orgatron 5',
-//       description: 'Organized'
-//     })
-//       .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
-//       .then(res => {
-//         expect(res.body).toEqual({
-//           _id: expect.anything(),
-//           title: 'Orgatron 5',
-//           description: 'Organized',
-//           __v: 0
-//         });
-//       });
-//   });
 
-//   it('patches an organization', () => {
-//     return Organization.create({
-//       title: 'Organization',
-//       description: 'Organized'
-//     })
-//       .then(organization => {
-//         return request(app)
-//           .patch(`/api/v1/organizations/${organization._id}`)
-//           .send({ title: 'Organization Supreme', description: 'Organized + Sour Cream' });
-//       })
-//       .then(res => {
-//         expect(res.body).toEqual({
-//           _id: expect.anything(),
-//           title: 'Organization Supreme',
-//           description: 'Organized + Sour Cream',
-//           __v: 0
-//         });
-//       });
-//   });
+  
+  it('gets an organization by id', () => {
+    Organization.create({
+      title: 'Orgatron 5',
+      description: 'Organized'
+    })
+      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Orgatron 5',
+          description: 'Organized',
+          __v: 0
+        });
+      });
+  });
 
-//   it('delete an organization', () => {
-//     return Organization.create({
-//       title: 'Organization As Heck',
-//       description: 'Absolutely Organized'
-//     })
-//       .then(organization => request(app).delete(`/api/v1/organizations/${organization._id}`))
-//       .then(res => {
-//         expect(res.body).toEqual({
-//           _id: expect.anything(),
-//           title: 'Organization As Heck',
-//           description: 'Absolutely Organized',
-//           __v: 0
-//         });
-//       });
-//   });
+  it('patches an organization', () => {
+    return Organization.create({
+      title: 'Organization',
+      description: 'Organized'
+    })
+      .then(organization => {
+        return request(app)
+          .patch(`/api/v1/organizations/${organization._id}`)
+          .send({ title: 'Organization Supreme', description: 'Organized + Sour Cream' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Organization Supreme',
+          description: 'Organized + Sour Cream',
+          __v: 0
+        });
+      });
+  });
+
+  it('delete an organization', () => {
+    return Organization.create({
+      title: 'Organization As Heck',
+      description: 'Absolutely Organized'
+    })
+      .then(organization => request(app).delete(`/api/v1/organizations/${organization._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          title: 'Organization As Heck',
+          description: 'Absolutely Organized',
+          __v: 0
+        });
+      });
+  });
 });
