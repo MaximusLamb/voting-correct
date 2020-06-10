@@ -62,10 +62,13 @@ describe('poll routes', () => {
       title: 'Coolest Dogs',
       options: ['old yeller', 'balto', 'scooby doo']
     })
-      .then(() => request(app).get('/api/v1/polls'))
+      .then(() => request(app).get(`/api/v1/polls?organization=${organization.id}`))
       .then(res => {
         expect(res.body).toEqual([{
-          organization: organization.id,
+          organization: {
+            _id: expect.anything(),
+            title: 'Poll People',
+          },
           title: 'Coolest Dogs',
           options: ['old yeller', 'balto', 'scooby doo'],
           _id: expect.anything(),
@@ -76,7 +79,7 @@ describe('poll routes', () => {
   });
 
   it('gets a poll by id', () => {
-    Poll.create({
+    return Poll.create({
       organization: organization.id,
       title: 'Coolest Dogs',
       options: ['old yeller', 'balto', 'scooby doo']
@@ -84,6 +87,10 @@ describe('poll routes', () => {
       .then(poll => request(app).get(`/api/v1/polls/${poll._id}`))
       .then(res => {
         expect(res.body).toEqual({
+          organization: {
+            _id: expect.anything(),
+            title: 'Poll People',
+          },
           _id: expect.anything(),
           title: 'Coolest Dogs',
           options: ['old yeller', 'balto', 'scooby doo'],
@@ -94,13 +101,13 @@ describe('poll routes', () => {
 
   it('updates a poll', () => {
     return Poll.create({
-      organization: organization.id,
+      organization: organization._id,
       title: 'Sickest Dogs',
       options: ['old yeller', 'balto', 'scooby doo']
     })
       .then(poll => {
         return request(app)
-          .patch(`/api/v1/polls/${poll._id}`)
+          .patch(`/api/v1/polls/${poll.id}`)
           .send({ options: ['old yeller', 'balto', 'scooby doo', 'snoop'] });
       })
       .then(res => {
@@ -114,14 +121,14 @@ describe('poll routes', () => {
       });
   });
 
-  it.only('delete a poll', () => {
+  it('deletes a poll', () => {
     return Poll.create({
-      organization: organization.id,
+      organization: organization._id,
       title: 'Illest Cats',
       options: ['garfield', 'fritz', 'thunder', 'chicken']
       
     })
-      .then(poll => request(app).delete(`/api/v1/polls/${poll._id}`))
+      .then(poll => request(app).delete(`/api/v1/polls/${poll.id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
