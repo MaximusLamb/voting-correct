@@ -34,7 +34,7 @@ describe('poll routes', () => {
     return mongod.stop();
   });
 
-  it('create an poll using POST', () => {
+  it('create a poll using POST', () => {
     return request(app)
       .post('/api/v1/Polls')
       .send({
@@ -55,7 +55,7 @@ describe('poll routes', () => {
       });
   });
 
-  it.only('lists all polls of the organizations', async() => {
+  it('lists all polls of the organizations', async() => {
 
     await Poll.create({
       organization: organization._id,
@@ -75,55 +75,59 @@ describe('poll routes', () => {
       });
   });
 
-
-  
-  it('gets an organization by id', () => {
-    Organization.create({
-      title: 'Orgatron 5',
-      description: 'Organized'
+  it('gets a poll by id', () => {
+    Poll.create({
+      organization: organization.id,
+      title: 'Coolest Dogs',
+      options: ['old yeller', 'balto', 'scooby doo']
     })
-      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+      .then(poll => request(app).get(`/api/v1/polls/${poll._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          title: 'Orgatron 5',
-          description: 'Organized',
+          title: 'Coolest Dogs',
+          options: ['old yeller', 'balto', 'scooby doo'],
           __v: 0
         });
       });
   });
 
-  it('patches an organization', () => {
-    return Organization.create({
-      title: 'Organization',
-      description: 'Organized'
+  it('updates a poll', () => {
+    return Poll.create({
+      organization: organization.id,
+      title: 'Sickest Dogs',
+      options: ['old yeller', 'balto', 'scooby doo']
     })
-      .then(organization => {
+      .then(poll => {
         return request(app)
-          .patch(`/api/v1/organizations/${organization._id}`)
-          .send({ title: 'Organization Supreme', description: 'Organized + Sour Cream' });
+          .patch(`/api/v1/polls/${poll._id}`)
+          .send({ options: ['old yeller', 'balto', 'scooby doo', 'snoop'] });
       })
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          title: 'Organization Supreme',
-          description: 'Organized + Sour Cream',
+          organization: organization.id,
+          title: 'Sickest Dogs',
+          options: ['old yeller', 'balto', 'scooby doo', 'snoop'],
           __v: 0
         });
       });
   });
 
-  it('delete an organization', () => {
-    return Organization.create({
-      title: 'Organization As Heck',
-      description: 'Absolutely Organized'
+  it.only('delete a poll', () => {
+    return Poll.create({
+      organization: organization.id,
+      title: 'Illest Cats',
+      options: ['garfield', 'fritz', 'thunder', 'chicken']
+      
     })
-      .then(organization => request(app).delete(`/api/v1/organizations/${organization._id}`))
+      .then(poll => request(app).delete(`/api/v1/polls/${poll._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
-          title: 'Organization As Heck',
-          description: 'Absolutely Organized',
+          organization: organization.id,
+          title: 'Illest Cats',
+          options: ['garfield', 'fritz', 'thunder', 'chicken'],
           __v: 0
         });
       });
