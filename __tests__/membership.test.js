@@ -122,7 +122,7 @@ describe('membership routes', () => {
       });
   });
   
-  it.only('lists all organizations a user is part of', async() => {
+  it('lists all organizations a user is part of', async() => {
 
     const organization = await Organization.create({
       title: 'Poll People',
@@ -186,6 +186,37 @@ describe('membership routes', () => {
           },
         }
         ]);
+      });
+  });
+
+  it.only('deletes a membership', async() => {
+
+    const organization = await Organization.create({
+      title: 'Poll People',
+      description: 'People Who Like Polls',
+      image: 'placekitten.com'
+    });
+
+    const user = await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email'
+    });
+
+    await Membership.create({
+      organization: organization._id,
+      user: user._id
+    }) 
+      .then(member => request(app).delete(`/api/v1/memberships/${member._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          _id: expect.anything(),
+          organization: expect.anything(),
+          user: expect.anything(),
+        }
+        );
       });
   });
 });
