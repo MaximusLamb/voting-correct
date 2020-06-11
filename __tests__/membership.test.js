@@ -117,8 +117,7 @@ describe('membership routes', () => {
             _id: expect.anything(),
             email: 'sickdaddy@ill.com',
             name: 'Ding Ding',
-          },
-             
+          }    
         }]);
       });
   });
@@ -158,8 +157,35 @@ describe('membership routes', () => {
       .get(`/api/v1/memberships?user=${user._id}`)
       .then(res => {
         expect(res.body).toEqual([{
-         
-        }]);
+          
+          __v: 0,
+          _id: expect.anything(),
+          organization: {
+            _id: expect.anything(),
+            image: 'placekitten.com',
+            title: 'Poll People',
+          },
+          user: {
+            _id: expect.anything(),
+            email: 'sosuperrad@sickness.gov',
+            name: 'Bing Bing',
+          }, 
+        },
+        { 
+          __v: 0,
+          _id: expect.anything(),
+          organization: {
+            _id: expect.anything(),
+            image: 'placekitten.com',
+            title: 'Super Crew',
+          },
+          user: {
+            _id: expect.anything(),
+            email: 'sosuperrad@sickness.gov',
+            name: 'Bing Bing',
+          },
+        }
+        ]);
       });
-  });  
+  });
 });
