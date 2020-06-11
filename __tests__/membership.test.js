@@ -189,7 +189,7 @@ describe('membership routes', () => {
       });
   });
 
-  it.only('deletes a membership', async() => {
+  it('deletes a membership', async() => {
 
     const organization = await Organization.create({
       title: 'Poll People',
