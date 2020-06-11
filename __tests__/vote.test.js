@@ -73,8 +73,50 @@ describe('vote routes', () => {
       });
   });
 
-  it('gets all votes', async() => {
+  it('gets all votes on a poll', async() => {
+
+    const user2 = await User.create({
+      name: 'Tom',
+      email: 'tom@tom.com'
+    });
     
+    return request(app)
+      .post('/api/v1/votes')
+      .send([{
+        user: user2._id,
+        poll: poll._id,
+        option: 'green'
+      }, {
+        user: user._id,
+        poll: poll._id,
+        option: 'red'
+      }])
+      .then(res => {
+        expect(res.body).toEqual([{
+          __v: 0, 
+          _id: expect.anything(), 
+          option: 'green', 
+          poll: expect.anything(), 
+          user: expect.anything()
+        },
+        { __v: 0,
+          _id: expect.anything(), 
+          option: 'red', 
+          poll: expect.anything(), 
+          user: expect.anything()
+        }]);
+      });
+  });
+
+  it('gets all votes by a user', async() => {
+
+    const poll2 = await Poll.create({
+      organization: organization._id,
+      title: 'Favorite Color',
+      description: 'Choose a Favorite Color',
+      options: ['red', 'blue', 'green'],
+    });
+
     return request(app)
       .post('/api/v1/votes')
       .send([{
@@ -83,7 +125,7 @@ describe('vote routes', () => {
         option: 'green'
       }, {
         user: user._id,
-        poll: poll._id,
+        poll: poll2._id,
         option: 'red'
       }])
       .then(res => {
