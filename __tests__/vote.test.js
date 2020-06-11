@@ -3,7 +3,7 @@ const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
 const connect = require('../lib/utils/connect');
 
-// const Vote = require('../lib/models/Vote');
+const Vote = require('../lib/models/Vote');
 const Poll = require('../lib/models/Poll');
 const User = require('../lib/models/User');
 const Organization = require('../lib/models/Organization');
@@ -96,14 +96,14 @@ describe('vote routes', () => {
           __v: 0, 
           _id: expect.anything(), 
           option: 'green', 
-          poll: expect.anything(), 
-          user: expect.anything()
+          poll: poll.id, 
+          user: user2.id
         },
         { __v: 0,
           _id: expect.anything(), 
           option: 'red', 
-          poll: expect.anything(), 
-          user: expect.anything()
+          poll: poll.id, 
+          user: user.id
         }]);
       });
   });
@@ -133,15 +133,37 @@ describe('vote routes', () => {
           __v: 0, 
           _id: expect.anything(), 
           option: 'green', 
-          poll: expect.anything(), 
-          user: expect.anything()
+          poll: poll.id, 
+          user: user.id
         },
         { __v: 0,
           _id: expect.anything(), 
           option: 'red', 
-          poll: expect.anything(), 
-          user: expect.anything()
+          poll: poll2.id, 
+          user: user.id
         }]);
+      });
+  });
+
+  it('updates a vote', () => {
+    return Vote.create({
+      poll: poll.id,
+      user: user.id,
+      option: 'green'
+    })
+      .then(vote => {
+        return request(app)
+          .patch(`/api/v1/votes/${vote._id}`)
+          .send({ option: 'red' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          user: user.id,
+          option: 'red',
+          poll: poll.id,
+          __v: 0
+        });
       });
   });
 });
