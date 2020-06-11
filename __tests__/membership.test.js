@@ -56,4 +56,52 @@ describe('membership routes', () => {
       });
   });
 
+  it('lists all users in an organization', async() => {
+
+    const organization = await Organization.create({
+      title: 'Poll People',
+      description: 'People Who Like Polls',
+      image: 'placekitten.com'
+    });
+
+    const user2 = await User.create({
+      name: 'Ding Ding',
+      phone: '6666666666',
+      email: 'sickdaddy@ill.com',
+      communicationMedium: 'phone'
+    });
+
+    const user = await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email'
+    });
+
+    await Membership.create({
+      organization: organization._id,
+      user: user._id
+    });
+
+    await Membership.create({
+      organization: organization._id,
+      user: user2._id
+    });
+      
+    return request(app)
+      .get(`/api/v1/memberships?organization=${organization._id}`)
+      .then(res => {
+        expect(res.body).toEqual([{
+          _id: expect.anything(),
+          organization: organization.id,
+          user: user.id,
+          __v: 0         
+        }, {
+          _id: expect.anything(),
+          organization: organization.id,
+          user: user2.id,
+          __v: 0
+        }]);
+      });
+  });  
 });
