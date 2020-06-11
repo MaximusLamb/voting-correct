@@ -20,32 +20,40 @@ describe('vote routes', () => {
   beforeEach(() => {
     return mongoose.connection.dropDatabase();
   });
-   
+
   
-  afterAll(async() => {
-    await mongoose.connection.close();
-    return mongod.stop();
-  });
-  
-  it.only('creates a new vote', async() => {
+  let organization;
+  let user;
+  let poll;
+
+  beforeEach(async() => {
     
-    const organization = await Organization.create({
+    organization = await Organization.create({
       title: 'Poll People',
       description: 'People Who Like Colors',
       image: 'placekitten.com'
     });
     
-    const user = await User.create({
+    user = await User.create({
       name: 'Tom',
       email: 'tom@tom.com'
     });
     
-    const poll = await Poll.create({
+    poll = await Poll.create({
       organization: organization._id,
       title: 'Favorite Color',
       description: 'Choose a Favorite Color',
       options: ['red', 'blue', 'green'],
     });
+  });
+
+  afterAll(async() => {
+    await mongoose.connection.close();
+    return mongod.stop();
+  });
+  
+  it('creates a new vote', async() => {
+    
     
     return request(app)
       .post('/api/v1/votes')
@@ -62,6 +70,36 @@ describe('vote routes', () => {
           option: 'green',
           __v: 0
         });
+      });
+  });
+
+  it('gets all votes', async() => {
+    
+    return request(app)
+      .post('/api/v1/votes')
+      .send([{
+        user: user._id,
+        poll: poll._id,
+        option: 'green'
+      }, {
+        user: user._id,
+        poll: poll._id,
+        option: 'red'
+      }])
+      .then(res => {
+        expect(res.body).toEqual([{
+          __v: 0, 
+          _id: expect.anything(), 
+          option: 'green', 
+          poll: expect.anything(), 
+          user: expect.anything()
+        },
+        { __v: 0,
+          _id: expect.anything(), 
+          option: 'red', 
+          poll: expect.anything(), 
+          user: expect.anything()
+        }]);
       });
   });
 });
