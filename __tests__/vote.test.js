@@ -54,7 +54,6 @@ describe('vote routes', () => {
   
   it('creates a new vote', async() => {
     
-    
     return request(app)
       .post('/api/v1/votes')
       .send({
@@ -65,6 +64,32 @@ describe('vote routes', () => {
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
+          user: user.id,
+          poll: poll.id,
+          option: 'green',
+          __v: 0
+        });
+      });
+  });
+
+  it('updates a vote if it already exists', async() => {
+
+    const vote = await Vote.create ({
+      user: user._id,
+      poll: poll._id,
+      option: 'red'
+    });
+    
+    return request(app)
+      .post('/api/v1/votes/vote')
+      .send({
+        user: user._id,
+        poll: poll._id,
+        option: 'green'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: vote.id,
           user: user.id,
           poll: poll.id,
           option: 'green',
