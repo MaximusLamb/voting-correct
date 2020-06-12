@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const connect = require('../lib/utils/connect');
 
 const Organization = require('../lib/models/Organization');
+const Poll = require('../lib/models/Poll');
 
 const request = require('supertest');
 const app = require('../lib/app');
@@ -109,12 +110,30 @@ describe('voting routes', () => {
       });
   });
 
-  it('delete an organization', () => {
-    return Organization.create({
+  it('delete an organization and all votes and polls', async() => {
+
+    const organization = await Organization.create({
       title: 'Organization As Heck',
       description: 'Absolutely Organized'
-    })
-      .then(organization => request(app).delete(`/api/v1/organizations/${organization._id}`))
+    });
+
+    await Poll.create([
+      {
+        organization: organization._id,
+        title: 'Favorite Color',
+        description: 'Choose a Favorite Color',
+        options: ['red', 'blue', 'green']
+      },
+      {
+        organization: organization._id,
+        title: 'Are You Happy?',
+        description: 'No description',
+        options: ['no', 'i dont know', 'unknown']
+      }
+    ]);
+
+    return request(app)
+      .delete(`/api/v1/organizations/${organization._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -122,6 +141,11 @@ describe('voting routes', () => {
           description: 'Absolutely Organized',
           __v: 0
         });
+        return Poll.find({ organization: organization._id });
+      })
+      .then(polls => {
+        expect(polls).toEqual([]);
       });
   });
 });
+
