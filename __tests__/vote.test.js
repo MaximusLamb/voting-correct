@@ -104,32 +104,33 @@ describe('vote routes', () => {
       name: 'Tom',
       email: 'tom@tom.com'
     });
+
+    await Vote.create([{
+      user: user._id,
+      poll: poll._id,
+      option: 'green'
+    }, {
+      user: user2._id,
+      poll: poll._id,
+      option: 'red'
+    }]);
     
     return request(app)
-      .post('/api/v1/votes')
-      .send([{
-        user: user2._id,
-        poll: poll._id,
-        option: 'green'
-      }, {
-        user: user._id,
-        poll: poll._id,
-        option: 'red'
-      }])
+      .get(`/api/v1/votes/?poll=${poll._id}`)
       .then(res => {
-        expect(res.body).toEqual([{
+        expect(res.body).toEqual(expect.arrayContaining([{
           __v: 0, 
           _id: expect.anything(), 
           option: 'green', 
           poll: poll.id, 
-          user: user2.id
+          user: user.id
         },
         { __v: 0,
           _id: expect.anything(), 
           option: 'red', 
           poll: poll.id, 
-          user: user.id
-        }]);
+          user: user2.id
+        }]));
       });
   });
 
@@ -142,17 +143,18 @@ describe('vote routes', () => {
       options: ['red', 'blue', 'green'],
     });
 
+    await Vote.create([{
+      user: user._id,
+      poll: poll._id,
+      option: 'green'
+    }, {
+      user: user._id,
+      poll: poll2._id,
+      option: 'red'
+    }]);
+
     return request(app)
-      .post('/api/v1/votes')
-      .send([{
-        user: user._id,
-        poll: poll._id,
-        option: 'green'
-      }, {
-        user: user._id,
-        poll: poll2._id,
-        option: 'red'
-      }])
+      .get(`/api/v1/votes/?user=${user._id}`)
       .then(res => {
         expect(res.body).toEqual([{
           __v: 0, 
