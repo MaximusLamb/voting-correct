@@ -3,12 +3,16 @@ const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
 const connect = require('../lib/utils/connect');
 
-const User = require('../lib/models/User');
 
 const request = require('supertest');
 const app = require('../lib/app');
 
-describe('voting routes', () => {
+const Organization = require('../lib/models/Organization');
+const User = require('../lib/models/User');
+const Membership = require('../lib/models/Membership');
+
+
+describe('user routes', () => {
   beforeAll(async() => {
     const uri = await mongod.getUri();
     return connect(uri);
@@ -23,14 +27,32 @@ describe('voting routes', () => {
     return mongod.stop();
   });
 
-  it('gets a user by id', () => {
-    User.create({
+  it('gets a user by id and all the organizations they are members of', async() => {
+
+    const user = await User.create({
       name: 'Bing Bing',
       phone: '4066666666',
       email: 'sosuperrad@sickness.gov',
       communicationMedium: 'email'
-    })
-      .then(user => request(app).get(`/api/v1/users/${user._id}`))
+    });
+
+    const organization1 = await Organization.create({
+      title: 'Orgatron 5',
+      description: 'Organized'
+    });
+
+    const organization2 = await Organization.create({
+      title: 'Orgatron 6',
+      description: 'Organized + 1'
+    });
+
+    await Membership.create([
+      { organization: organization1._id, user: user._id },
+      { organization: organization2._id, user: user._id }
+    ]);
+
+    return request(app)
+      .get(`/api/v1/users/${user._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
@@ -38,6 +60,10 @@ describe('voting routes', () => {
           phone: '4066666666',
           email: 'sosuperrad@sickness.gov',
           communicationMedium: 'email',
+          memberships: [
+            { _id: expect.anything(), organization: organization1.id, user: user.id },
+            { _id: expect.anything(), organization: organization2.id, user: user.id }
+          ],
           __v: 0
         });
       });
