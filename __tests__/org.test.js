@@ -5,6 +5,8 @@ const connect = require('../lib/utils/connect');
 
 const Organization = require('../lib/models/Organization');
 const Poll = require('../lib/models/Poll');
+const Membership = require('../lib/models/Membership');
+const User = require('../lib/models/User');
 
 const request = require('supertest');
 const app = require('../lib/app');
@@ -74,20 +76,46 @@ describe('voting routes', () => {
       });
   });
 
-  it('gets an organization by id', () => {
-    Organization.create({
+  it('gets an organization by id with all members in it', async() => {
+
+    const org = await Organization.create({
       title: 'Orgatron 5',
       description: 'Organized'
-    })
-      .then(organization => request(app).get(`/api/v1/organizations/${organization._id}`))
+    });
+
+    const user = await User.create({
+      name: 'Ding Ding',
+      phone: '6666666666',
+      email: 'sickdaddy@ill.com',
+      communicationMedium: 'phone'
+    });
+
+    const user2 = await User.create({
+      name: 'Bing Bing',
+      phone: '4206668749',
+      email: 'superfun@goodtimes.com',
+      communicationMedium: 'phone'
+    });
+
+    await Membership.create([
+      { organization: org._id, user: user._id },
+      { organization: org._id, user: user2._id }
+    ]);
+    
+    return request(app)
+      .get(`/api/v1/organizations/${org._id}`)
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),
           title: 'Orgatron 5',
           description: 'Organized',
+          memberships: [
+            { _id: expect.anything(), organization: org.id, user: user.id },
+            { _id: expect.anything(), organization: org.id, user: user2.id }
+          ],
           __v: 0
         });
-      });
+      });    
   });
 
   it('patches an organization', () => {

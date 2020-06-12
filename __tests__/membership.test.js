@@ -6,7 +6,7 @@ const connect = require('../lib/utils/connect');
 const Membership = require('../lib/models/Membership');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
-const Poll = require('../lib/models/Poll');
+// const Poll = require('../lib/models/Poll');
 
 const request = require('supertest');
 const app = require('../lib/app');
@@ -191,7 +191,7 @@ describe('membership routes', () => {
       });
   });
 
-  it.only('deletes a membership and all votes by member', async() => {
+  it('deletes a membership and all votes by member', async() => {
 
     const organization = await Organization.create({
       title: 'Poll People',
@@ -205,7 +205,7 @@ describe('membership routes', () => {
       email: 'sosuperrad@sickness.gov',
       communicationMedium: 'email'
     });
-    
+
     const membership = await Membership.create({
       organization: organization._id,
       user: user._id
