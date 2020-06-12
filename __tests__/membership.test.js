@@ -6,9 +6,11 @@ const connect = require('../lib/utils/connect');
 const Membership = require('../lib/models/Membership');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
+const Poll = require('../lib/models/Poll');
 
 const request = require('supertest');
 const app = require('../lib/app');
+const Vote = require('../lib/models/Vote');
 
 describe('membership routes', () => {
   beforeAll(async() => {
@@ -189,7 +191,7 @@ describe('membership routes', () => {
       });
   });
 
-  it('deletes a membership', async() => {
+  it.only('deletes a membership and all votes by member', async() => {
 
     const organization = await Organization.create({
       title: 'Poll People',
@@ -203,20 +205,25 @@ describe('membership routes', () => {
       email: 'sosuperrad@sickness.gov',
       communicationMedium: 'email'
     });
-
-    await Membership.create({
+    
+    const membership = await Membership.create({
       organization: organization._id,
       user: user._id
-    }) 
-      .then(member => request(app).delete(`/api/v1/memberships/${member._id}`))
+    });
+
+    return request(app)
+      .delete(`/api/v1/memberships/${membership._id}`)
       .then(res => {
         expect(res.body).toEqual({
-          __v: 0,
           _id: expect.anything(),
-          organization: expect.anything(),
-          user: expect.anything(),
-        }
-        );
+          organization: organization.id,         
+          user: user.id,        
+          __v: 0,
+        });
+        return Vote.find({ membership: membership._id });
+      })
+      .then(votes => {
+        expect(votes).toEqual([]);
       });
   });
 });
