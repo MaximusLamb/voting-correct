@@ -74,7 +74,7 @@ describe('vote routes', () => {
 
   it('updates a vote if it already exists', async() => {
 
-    const vote = await Vote.create ({
+    const vote = await Vote.create({
       user: user._id,
       poll: poll._id,
       option: 'red'
