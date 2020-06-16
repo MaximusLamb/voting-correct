@@ -26,12 +26,24 @@ describe('user routes', () => {
 
   let newUser;
 
+  const agent = request.agent(app);
+
   beforeEach(async() => {
     newUser = await User.create({
       name: 'Coolio',
       email: 'coolio@gangstersparadise.com',
       password: 'swag'
     });
+
+    return agent
+      .post('/api/v1/Users/signup')
+      .send({
+        name: 'Bing Bing',
+        phone: '4066666666',
+        email: 'sosuperrad@sickness.gov',
+        communicationMedium: 'email',
+        password: 'somewords'
+      });
   });
 
   afterAll(async() => {
@@ -41,7 +53,7 @@ describe('user routes', () => {
 
   it('can login a user', async() => {
 
-    return request(app)
+    return agent
       .post('/api/v1/Users/login')
       .send({
         name: 'Coolio',
@@ -60,7 +72,7 @@ describe('user routes', () => {
 
   it('can signup a new user', async() => {
 
-    return request(app)
+    return agent
       .post('/api/v1/Users/signup')
       .send({
         name: 'Coolio2',
@@ -78,7 +90,6 @@ describe('user routes', () => {
   });
 
   it('can verify if Coolio is logged in', async() => {
-    const agent = request.agent(app);
 
     newUser = await User.create({
       name: 'Coolio',
@@ -132,7 +143,7 @@ describe('user routes', () => {
       { organization: organization2._id, user: user._id }
     ]);
 
-    return request(app)
+    return agent
       .get(`/api/v1/users/${user._id}`)
       .then(res => {
         expect(res.body).toEqual({
@@ -159,7 +170,7 @@ describe('user routes', () => {
       password: 'wordstuff'
     })
       .then(user => {
-        return request(app)
+        return agent
           .patch(`/api/v1/users/${user._id}`)
           .send({ name: 'Bing Bing Supreme', email: 'sosupersourcreamy@sickness.sourcream' });
       })
@@ -184,7 +195,8 @@ describe('user routes', () => {
       password: 'wordstuff',
       __v: 0
     })
-      .then(user => request(app).delete(`/api/v1/users/${user._id}`))
+      .then(user => agent
+        .delete(`/api/v1/users/${user._id}`))
       .then(res => {
         expect(res.body).toEqual({
           _id: expect.anything(),

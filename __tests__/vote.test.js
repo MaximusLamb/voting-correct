@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
@@ -25,6 +27,7 @@ describe('vote routes', () => {
   let organization;
   let user;
   let poll;
+  const agent = request.agent(app);
 
   beforeEach(async() => {
     
@@ -34,17 +37,31 @@ describe('vote routes', () => {
       image: 'placekitten.com'
     });
     
-    user = await User.create({
-      name: 'Tom',
-      email: 'tom@tom.com'
-    });
-    
     poll = await Poll.create({
       organization: organization._id,
       title: 'Favorite Color',
       description: 'Choose a Favorite Color',
       options: ['red', 'blue', 'green'],
     });
+    
+    user = await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email',
+      password: 'somewords'
+    });
+
+    return agent
+      .post('/api/v1/Users/login')
+      .send({
+        name: 'Bing Bing',
+        phone: '4066666666',
+        email: 'sosuperrad@sickness.gov',
+        communicationMedium: 'email',
+        password: 'somewords'
+      });
+    
   });
 
   afterAll(async() => {
@@ -54,7 +71,7 @@ describe('vote routes', () => {
   
   it('creates a new vote', async() => {
     
-    return request(app)
+    return agent
       .post('/api/v1/votes')
       .send({
         user: user._id,
@@ -80,7 +97,7 @@ describe('vote routes', () => {
       option: 'red'
     });
     
-    return request(app)
+    return agent
       .post('/api/v1/votes/vote')
       .send({
         user: user._id,
@@ -102,7 +119,8 @@ describe('vote routes', () => {
 
     const user2 = await User.create({
       name: 'Tom',
-      email: 'tom@tom.com'
+      email: 'tom@tom.com',
+      password: 'somewords'
     });
 
     await Vote.create([{
@@ -115,7 +133,7 @@ describe('vote routes', () => {
       option: 'red'
     }]);
     
-    return request(app)
+    return agent
       .get(`/api/v1/votes/?poll=${poll._id}`)
       .then(res => {
         expect(res.body).toEqual(expect.arrayContaining([{
@@ -153,7 +171,7 @@ describe('vote routes', () => {
       option: 'red'
     }]);
 
-    return request(app)
+    return agent
       .get(`/api/v1/votes/?user=${user._id}`)
       .then(res => {
         expect(res.body).toEqual([{
@@ -179,7 +197,7 @@ describe('vote routes', () => {
       option: 'green'
     })
       .then(vote => {
-        return request(app)
+        return agent
           .patch(`/api/v1/votes/${vote._id}`)
           .send({ option: 'red' });
       })

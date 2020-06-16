@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
@@ -21,13 +23,36 @@ describe('voting routes', () => {
     return mongoose.connection.dropDatabase();
   });
 
+  const agent = request.agent(app);
+
+  beforeEach(async() => {
+
+    await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email',
+      password: 'somewords'
+    });
+
+    return agent
+      .post('/api/v1/Users/login')
+      .send({
+        name: 'Bing Bing',
+        phone: '4066666666',
+        email: 'sosuperrad@sickness.gov',
+        communicationMedium: 'email',
+        password: 'somewords'
+      });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
   });
 
   it('create an organization using POST', () => {
-    return request(app)
+    return agent
       .post('/api/v1/Organizations')
       .send({
         title: 'Super Org',
@@ -57,7 +82,8 @@ describe('voting routes', () => {
       image: 'placekitten.com/bigkitty'
     })
 
-      .then(() => request(app).get('/api/v1/organizations'))
+      .then(() => agent
+        .get('/api/v1/organizations'))
       .then(res => {
         expect(res.body).toEqual([{
           _id: expect.anything(),
@@ -87,14 +113,16 @@ describe('voting routes', () => {
       name: 'Ding Ding',
       phone: '6666666666',
       email: 'sickdaddy@ill.com',
-      communicationMedium: 'phone'
+      communicationMedium: 'phone',
+      password: 'somewords'
     });
 
     const user2 = await User.create({
       name: 'Bing Bing',
       phone: '4206668749',
       email: 'superfun@goodtimes.com',
-      communicationMedium: 'phone'
+      communicationMedium: 'phone',
+      password: 'somewords'
     });
 
     await Membership.create([
@@ -102,7 +130,7 @@ describe('voting routes', () => {
       { organization: org._id, user: user2._id }
     ]);
     
-    return request(app)
+    return agent
       .get(`/api/v1/organizations/${org._id}`)
       .then(res => {
         expect(res.body).toEqual({
@@ -124,7 +152,7 @@ describe('voting routes', () => {
       description: 'Organized'
     })
       .then(organization => {
-        return request(app)
+        return agent
           .patch(`/api/v1/organizations/${organization._id}`)
           .send({ title: 'Organization Supreme', description: 'Organized + Sour Cream' });
       })
@@ -160,7 +188,7 @@ describe('voting routes', () => {
       }
     ]);
 
-    return request(app)
+    return agent
       .delete(`/api/v1/organizations/${organization._id}`)
       .then(res => {
         expect(res.body).toEqual({

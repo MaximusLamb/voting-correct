@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
@@ -6,7 +8,6 @@ const connect = require('../lib/utils/connect');
 const Membership = require('../lib/models/Membership');
 const Organization = require('../lib/models/Organization');
 const User = require('../lib/models/User');
-// const Poll = require('../lib/models/Poll');
 
 const request = require('supertest');
 const app = require('../lib/app');
@@ -22,6 +23,30 @@ describe('membership routes', () => {
     return mongoose.connection.dropDatabase();
   });
 
+  const agent = request.agent(app);
+  let user;
+
+  beforeEach(async() => {
+
+    user = await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email',
+      password: 'somewords'
+    });
+
+    return agent
+      .post('/api/v1/Users/login')
+      .send({
+        name: 'Bing Bing',
+        phone: '4066666666',
+        email: 'sosuperrad@sickness.gov',
+        communicationMedium: 'email',
+        password: 'somewords'
+      });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
@@ -34,15 +59,8 @@ describe('membership routes', () => {
       description: 'People Who Like Polls',
       image: 'placekitten.com'
     });
-
-    const user = await User.create({
-      name: 'Bing Bing',
-      phone: '4066666666',
-      email: 'sosuperrad@sickness.gov',
-      communicationMedium: 'email'
-    });
       
-    return request(app)
+    return agent
       .post('/api/v1/memberships')
       .send({
         organization: organization._id,
@@ -70,14 +88,16 @@ describe('membership routes', () => {
       name: 'Ding Ding',
       phone: '6666666666',
       email: 'sickdaddy@ill.com',
-      communicationMedium: 'phone'
+      communicationMedium: 'phone',
+      password: 'somewords'
     });
 
     const user = await User.create({
       name: 'Bing Bing',
       phone: '4066666666',
       email: 'sosuperrad@sickness.gov',
-      communicationMedium: 'email'
+      communicationMedium: 'email',
+      password: 'somewords'
     });
 
     await Membership.create({
@@ -142,7 +162,8 @@ describe('membership routes', () => {
       name: 'Bing Bing',
       phone: '4066666666',
       email: 'sosuperrad@sickness.gov',
-      communicationMedium: 'email'
+      communicationMedium: 'email',
+      password: 'somewords'
     });
 
     await Membership.create({
@@ -203,7 +224,8 @@ describe('membership routes', () => {
       name: 'Bing Bing',
       phone: '4066666666',
       email: 'sosuperrad@sickness.gov',
-      communicationMedium: 'email'
+      communicationMedium: 'email',
+      password: 'somewords'
     });
 
     const membership = await Membership.create({
