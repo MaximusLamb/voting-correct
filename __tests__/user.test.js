@@ -39,7 +39,7 @@ describe('user routes', () => {
     return mongod.stop();
   });
 
-  it.only('can login a new user', async() => {
+  it('can login a user', async() => {
 
     return request(app)
       .post('/api/v1/Users/login')
@@ -52,6 +52,25 @@ describe('user routes', () => {
         expect(res.body).toEqual({
           _id: newUser.id,
           name: 'Coolio',
+          email: 'coolio@gangstersparadise.com',
+          __v: 0
+        });
+      });
+  });
+
+  it('can signup a new user', async() => {
+
+    return request(app)
+      .post('/api/v1/Users/signup')
+      .send({
+        name: 'Coolio2',
+        email: 'coolio@gangstersparadise.com',
+        password: 'swag'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'Coolio2',
           email: 'coolio@gangstersparadise.com',
           __v: 0
         });
