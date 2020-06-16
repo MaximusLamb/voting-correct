@@ -77,104 +77,123 @@ describe('user routes', () => {
       });
   });
 
-  it.only('can verify if Coolio is logged in', () => {
+  it('can verify if Coolio is logged in', async() => {
     const agent = request.agent(app);
+
+    newUser = await User.create({
+      name: 'Coolio',
+      email: 'coolio@gangstersparadise.com',
+      password: 'swag'
+    });
+
     return agent
-      .get('/api/v1/Users/verify');
-  })
-    .then(res => {
-      expect(res.body).toEqual({
-        _id: newUser.id,
+      .post('/api/v1/Users/login')
+      .send({
         email: 'coolio@gangstersparadise.com',
         password: 'swag'
+      })
+      .then(() => {
+  
+        return agent
+          .get('/api/v1/Users/verify')
+          .then(res => {
+            expect(res.body).toEqual({
+              _id: expect.anything(),
+              name: 'Coolio',
+              email: 'coolio@gangstersparadise.com',
+              __v: 0
+            });
+          });
       });
+  });
+
+  it('gets a user by id and all the organizations they are members of', async() => {
+
+    const user = await User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email',
+      password: 'wordstuff'
     });
-});
 
-it('gets a user by id and all the organizations they are members of', async() => {
+    const organization1 = await Organization.create({
+      title: 'Orgatron 5',
+      description: 'Organized'
+    });
 
-  const user = await User.create({
-    name: 'Bing Bing',
-    phone: '4066666666',
-    email: 'sosuperrad@sickness.gov',
-    communicationMedium: 'email'
-  });
+    const organization2 = await Organization.create({
+      title: 'Orgatron 6',
+      description: 'Organized + 1'
+    });
 
-  const organization1 = await Organization.create({
-    title: 'Orgatron 5',
-    description: 'Organized'
-  });
+    await Membership.create([
+      { organization: organization1._id, user: user._id },
+      { organization: organization2._id, user: user._id }
+    ]);
 
-  const organization2 = await Organization.create({
-    title: 'Orgatron 6',
-    description: 'Organized + 1'
-  });
-
-  await Membership.create([
-    { organization: organization1._id, user: user._id },
-    { organization: organization2._id, user: user._id }
-  ]);
-
-  return request(app)
-    .get(`/api/v1/users/${user._id}`)
-    .then(res => {
-      expect(res.body).toEqual({
-        _id: expect.anything(),
-        name: 'Bing Bing',
-        phone: '4066666666',
-        email: 'sosuperrad@sickness.gov',
-        communicationMedium: 'email',
-        memberships: [
-          { _id: expect.anything(), organization: organization1.id, user: user.id },
-          { _id: expect.anything(), organization: organization2.id, user: user.id }
-        ],
-        __v: 0
+    return request(app)
+      .get(`/api/v1/users/${user._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'Bing Bing',
+          phone: '4066666666',
+          email: 'sosuperrad@sickness.gov',
+          communicationMedium: 'email',
+          memberships: [
+            { _id: expect.anything(), organization: organization1.id, user: user.id },
+            { _id: expect.anything(), organization: organization2.id, user: user.id }
+          ],
+          __v: 0
+        });
       });
-    });
-});
+  });
 
-it('patches a user', () => {
-  return User.create({
-    name: 'Bing Bing',
-    phone: '4066666666',
-    email: 'sosuperrad@sickness.gov',
-    communicationMedium: 'email'
-  })
-    .then(user => {
-      return request(app)
-        .patch(`/api/v1/users/${user._id}`)
-        .send({ name: 'Bing Bing Supreme', email: 'sosupersourcreamy@sickness.sourcream' });
+  it('patches a user', () => {
+    return User.create({
+      name: 'Bing Bing',
+      phone: '4066666666',
+      email: 'sosuperrad@sickness.gov',
+      communicationMedium: 'email',
+      password: 'wordstuff'
     })
-    .then(res => {
-      expect(res.body).toEqual({
-        _id: expect.anything(),
-        name: 'Bing Bing Supreme',
-        phone: '4066666666',
-        email: 'sosupersourcreamy@sickness.sourcream',
-        communicationMedium: 'email',
-        __v: 0
+      .then(user => {
+        return request(app)
+          .patch(`/api/v1/users/${user._id}`)
+          .send({ name: 'Bing Bing Supreme', email: 'sosupersourcreamy@sickness.sourcream' });
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'Bing Bing Supreme',
+          phone: '4066666666',
+          email: 'sosupersourcreamy@sickness.sourcream',
+          communicationMedium: 'email',
+          __v: 0
+        });
       });
-    });
-});
+  });
 
-it('delete a user', () => {
-  return User.create({
-    name: 'Bing Bing Supreme',
-    phone: '4066666666',
-    email: 'sosupersourcreamy@sickness.sourcream',
-    communicationMedium: 'email',
-    __v: 0
-  })
-    .then(user => request(app).delete(`/api/v1/users/${user._id}`))
-    .then(res => {
-      expect(res.body).toEqual({
-        _id: expect.anything(),
-        name: 'Bing Bing Supreme',
-        phone: '4066666666',
-        email: 'sosupersourcreamy@sickness.sourcream',
-        communicationMedium: 'email',
-        __v: 0
+  it('delete a user', () => {
+    return User.create({
+      name: 'Bing Bing Supreme',
+      phone: '4066666666',
+      email: 'sosupersourcreamy@sickness.sourcream',
+      communicationMedium: 'email',
+      password: 'wordstuff',
+      __v: 0
+    })
+      .then(user => request(app).delete(`/api/v1/users/${user._id}`))
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: expect.anything(),
+          name: 'Bing Bing Supreme',
+          phone: '4066666666',
+          email: 'sosupersourcreamy@sickness.sourcream',
+          communicationMedium: 'email',
+          __v: 0
+        });
       });
-    });
+  });
 });
-
