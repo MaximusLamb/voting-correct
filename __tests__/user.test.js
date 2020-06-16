@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongod = new MongoMemoryServer();
 const mongoose = require('mongoose');
@@ -22,9 +24,38 @@ describe('user routes', () => {
     return mongoose.connection.dropDatabase();
   });
 
+  let newUser;
+
+  beforeEach(async() => {
+    newUser = await User.create({
+      name: 'Coolio',
+      email: 'coolio@gangstersparadise.com',
+      password: 'swag'
+    });
+  });
+
   afterAll(async() => {
     await mongoose.connection.close();
     return mongod.stop();
+  });
+
+  it.only('can login a new user', async() => {
+
+    return request(app)
+      .post('/api/v1/Users/login')
+      .send({
+        name: 'Coolio',
+        email: 'coolio@gangstersparadise.com',
+        password: 'swag'
+      })
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: newUser.id,
+          name: 'Coolio',
+          email: 'coolio@gangstersparadise.com',
+          __v: 0
+        });
+      });
   });
 
   it('gets a user by id and all the organizations they are members of', async() => {
