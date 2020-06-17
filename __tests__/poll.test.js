@@ -22,6 +22,8 @@ describe('poll routes', () => {
   let organization;
 
   beforeEach(async() => {
+
+    
     organization = await Organization.create({
       title: 'Poll People',
       description: 'People Who Like Colors',
